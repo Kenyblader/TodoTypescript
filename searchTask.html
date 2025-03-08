@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche de Tâches</title>
+    <link rel="stylesheet" href="searchForm.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Recherche de Tâches</h1>
+
+        <!-- Formulaire de recherche -->
+        <div class="search-form">
+            <label for="startDate">Date de début :</label>
+            <input type="date" id="startDate" name="startDate">
+
+            <label for="status">Statut :</label>
+            <select id="status" name="status">
+                <option value="">Tous</option>
+                <option value="À faire">À faire</option>
+                <option value="En cours">En cours</option>
+                <option value="Terminé">Terminé</option>
+            </select>
+
+            <button id="searchBtn">Rechercher</button>
+        </div>
+
+        <!-- Tableau des résultats -->
+        <table id="taskTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Date de début</th>
+                    <th>Date de fin</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Les tâches filtrées s'afficheront ici -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

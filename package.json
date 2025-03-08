@@ -1,0 +1,12 @@
+{
+  "name": "todo_ts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/test_script.js",
+    "build": "tsc "
+  },
+  "author": "blader",
+  "license": "MIT",
+  "description": ""
+}
