@@ -1,29 +1,7 @@
-export enum Statut{
-    "new", "en court", "terminer"
-}
 
-export interface SubTask{
-    id:number
-    text:string
-    dateDebut:Date
-    dateFinReel?:Date
-    dateFin:Date
-    statut:Statut
-}
+import { validateHeaderName } from "http"
+import { iTask, Statut, SubTask } from "./taskInterface.js"
 
-export interface iTask{
- id:number
- text:string
- dateDebut:Date
- dateFinReel?:Date
- dateFin:Date
- subtask:SubTask[]
- statut:Statut
-}
-
-export function interfaceToTask(task:iTask):Task{
-    return new Task(task.id,task.text,task.dateDebut,task.dateFin,task.statut,task.dateFinReel,task.subtask)
-}
 
 export class Task{
     private id:number
@@ -80,6 +58,39 @@ export class Task{
         this.statut = v;
     }
     
+    
+    public toInterface():iTask {
+        return {
+            id:this.id,
+            text:this.text,
+            dateDebut:this.dateDebut,
+            dateFin:this.dateFin,
+            dateFinReel:this.dateFinReel,
+            statut:this.statut,
+            subtask:this.subtasks
+        }
+    }
+
+     public nextStatus() {
+        let curent=this.statut
+        switch (curent) {
+            case Statut.new:
+                this.statut=Statut.enCours
+                break;
+            case Statut.enCours:
+                this.statut=Statut.terminer
+                this.dateFinReel= new Date()
+                break;
+            case Statut.terminer:
+                this.statut=Statut.new
+                this.dateFinReel=undefined
+                break;
+        
+            default:
+                console.error('aucun statut correspondant')
+                break;
+        }
+    }
     
   
     public addSubtask(task:SubTask):boolean {
