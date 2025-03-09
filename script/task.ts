@@ -1,29 +1,7 @@
-export enum Statut{
-    "new", "en court", "terminer"
-}
 
-export interface SubTask{
-    id:number
-    text:string
-    dateDebut:Date
-    dateFinReel?:Date
-    dateFin:Date
-    statut:Statut
-}
+import { validateHeaderName } from "http"
+import { iTask, Statut, SubTask } from "./taskInterface.js"
 
-export interface iTask{
- id:number
- text:string
- dateDebut:Date
- dateFinReel?:Date
- dateFin:Date
- subtask:SubTask[]
- statut:Statut
-}
-
-export function interfaceToTask(task:iTask):Task{
-    return new Task(task.id,task.text,task.dateDebut,task.dateFin,task.statut,task.dateFinReel,task.subtask)
-}
 
 export class Task{
     private id:number
@@ -81,6 +59,48 @@ export class Task{
     }
     
     
+    public toInterface():iTask {
+        return {
+            id:this.id,
+            text:this.text,
+            dateDebut:this.dateDebut,
+            dateFin:this.dateFin,
+            dateFinReel:this.dateFinReel,
+            statut:this.statut,
+            subtask:this.subtasks
+        }
+    }
+
+     public nextStatus() {
+        let curent=this.statut
+        switch (curent) {
+            case Statut.new:
+                this.statut=Statut.enCours
+                break;
+            case Statut.enCours:
+                this.statut=Statut.terminer
+                this.dateFinReel= new Date()
+                console.log("creation"+this.dateFinReel)
+                break;
+            case Statut.terminer:
+                this.statut=Statut.new
+                this.dateFinReel=undefined
+                console.log("destruction"+this.dateFinReel)
+                break;
+        
+            default:
+                console.error('aucun statut correspondant')
+                break;
+        }
+    }
+
+    public getafficheStatut():string{
+        if( this.statut==Statut.terminer)
+            return  (this.dateFinReel instanceof Date && !isNaN(this.dateFinReel.getTime())) ? this.dateFinReel.toISOString().split('T')[0]: "";
+        else
+            return this.statut
+
+    }
   
     public addSubtask(task:SubTask):boolean {
         let item=this.subtasks.find(t=>t.id===task.id)
@@ -98,6 +118,42 @@ export class Task{
             return false
         this.subtasks=this.subtasks.filter(st => st.id !== id)
         return true
+    }
+
+    public editSubtask(id:number, text:string):boolean {
+        let item=this.subtasks.find(t=>t.id===id)
+        
+        if(item==undefined)
+            return false
+        item.text=text
+        return true
+    }
+
+    public changeStatusSubtask(id:number)
+    {
+        let item=this.subtasks.find(t=>t.id===id)   
+        if(item==undefined)
+            return 
+        let curent=item.statut
+        switch (curent) {
+            case Statut.new:
+                item.statut=Statut.enCours
+                break;
+            case Statut.enCours:
+                item.statut=Statut.terminer
+                item.dateFinReel= new Date()
+                console.log("creation"+item.dateFinReel)
+                break;
+            case Statut.terminer:
+                item.statut=Statut.new
+                item.dateFinReel=undefined
+                console.log("destruction"+item.dateFinReel)
+                break;
+        
+            default:
+                console.error('aucun statut correspondant')
+                break;
+        }
     }
 
 

@@ -8,41 +8,39 @@
 </head>
 <body>
     <div class="container">
-        <h1>Recherche de Tâches</h1>
+        <h1>Mes Tâches</h1>
 
         <!-- Formulaire de recherche -->
         <div class="search-form">
-            <label for="startDate">Date de début :</label>
-            <input type="date" id="startDate" name="startDate">
-
-            <label for="status">Statut :</label>
-            <select id="status" name="status">
-                <option value="">Tous</option>
-                <option value="À faire">À faire</option>
-                <option value="En cours">En cours</option>
-                <option value="Terminé">Terminé</option>
+            <label for="filterType">Filtrer par :</label>
+            <select id="filterType">
+                <option value="name">Nom</option>
+                <option value="dateDebut">Date de début</option>
+                <option value="statut">Statut</option>
             </select>
+
+            <input type="text" id="filterValue" placeholder="Entrez la valeur">
 
             <button id="searchBtn">Rechercher</button>
         </div>
 
-        <!-- Tableau des résultats -->
+        <!-- Tableau des tâches -->
         <table id="taskTable">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nom</th>
                     <th>Date de début</th>
                     <th>Date de fin</th>
                     <th>Statut</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Les tâches filtrées s'afficheront ici -->
+                <!-- Les tâches et sous-tâches seront injectées ici -->
             </tbody>
         </table>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="./dist/search.js"></script>
 </body>
 </html>

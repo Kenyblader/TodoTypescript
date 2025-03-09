@@ -1,12 +1,4 @@
-export var Statut;
-(function (Statut) {
-    Statut[Statut["new"] = 0] = "new";
-    Statut[Statut["en court"] = 1] = "en court";
-    Statut[Statut["terminer"] = 2] = "terminer";
-})(Statut || (Statut = {}));
-export function interfaceToTask(task) {
-    return new Task(task.id, task.text, task.dateDebut, task.dateFin, task.statut, task.dateFinReel, task.subtask);
-}
+import { Statut } from "./taskInterface.js";
 export class Task {
     constructor(id, text, dateDebut, dateFin, statut, dateFinReel, subtask) {
         this.id = id;
@@ -45,6 +37,44 @@ export class Task {
     setStatut(v) {
         this.statut = v;
     }
+    toInterface() {
+        return {
+            id: this.id,
+            text: this.text,
+            dateDebut: this.dateDebut,
+            dateFin: this.dateFin,
+            dateFinReel: this.dateFinReel,
+            statut: this.statut,
+            subtask: this.subtasks
+        };
+    }
+    nextStatus() {
+        let curent = this.statut;
+        switch (curent) {
+            case Statut.new:
+                this.statut = Statut.enCours;
+                break;
+            case Statut.enCours:
+                this.statut = Statut.terminer;
+                this.dateFinReel = new Date();
+                console.log("creation" + this.dateFinReel);
+                break;
+            case Statut.terminer:
+                this.statut = Statut.new;
+                this.dateFinReel = undefined;
+                console.log("destruction" + this.dateFinReel);
+                break;
+            default:
+                console.error('aucun statut correspondant');
+                break;
+        }
+    }
+    getafficheStatut() {
+        if (this.statut == Statut.terminer)
+            return (this.dateFinReel instanceof Date && !isNaN(this.dateFinReel.getTime())) ? this.dateFinReel.toISOString().split('T')[0] : "";
+        else
+            return this.statut;
+    }
     addSubtask(task) {
         let item = this.subtasks.find(t => t.id === task.id);
         if (item != undefined)
@@ -58,5 +88,36 @@ export class Task {
             return false;
         this.subtasks = this.subtasks.filter(st => st.id !== id);
         return true;
+    }
+    editSubtask(id, text) {
+        let item = this.subtasks.find(t => t.id === id);
+        if (item == undefined)
+            return false;
+        item.text = text;
+        return true;
+    }
+    changeStatusSubtask(id) {
+        let item = this.subtasks.find(t => t.id === id);
+        if (item == undefined)
+            return;
+        let curent = item.statut;
+        switch (curent) {
+            case Statut.new:
+                item.statut = Statut.enCours;
+                break;
+            case Statut.enCours:
+                item.statut = Statut.terminer;
+                item.dateFinReel = new Date();
+                console.log("creation" + item.dateFinReel);
+                break;
+            case Statut.terminer:
+                item.statut = Statut.new;
+                item.dateFinReel = undefined;
+                console.log("destruction" + item.dateFinReel);
+                break;
+            default:
+                console.error('aucun statut correspondant');
+                break;
+        }
     }
 }

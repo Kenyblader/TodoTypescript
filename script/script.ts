@@ -1,160 +1,68 @@
-import { Task } from "./task.js";
-import { saveTasks,getTasks } from "./local_store.js";
+import { Task} from "./task.js";
+import { openDatabase,addTaskBd,updateTask, updateSubTask } from "./local_store.js";
+import { getTaskFromBd, saveTaskBd, Statut, stringToStatut, SubTask } from "./taskInterface.js";
 
-document.addEventListener("DOMContentLoaded", loadTodo); 
 
-function addTask():void {
-    let taskInput:HTMLInputElement = document.getElementById("taskInput") as HTMLInputElement;
+document.addEventListener('DOMContentLoaded',()=>{
+    openDatabase()
+    const button=document.getElementById("submit") as HTMLButtonElement
+    button.addEventListener("click",addTask)
+})
+
+function testDate(date:Date):boolean{
+   return (date instanceof Date && !isNaN(date.getTime())) 
+    ? true
+    : false;
+}
+
+async function addTask():Promise<void> {
+    let taskInput:HTMLInputElement = document.getElementById("task-name") as HTMLInputElement;
+    let startInput:HTMLInputElement = document.getElementById("start-date") as HTMLInputElement;
+    let endInput:HTMLInputElement = document.getElementById("due-date") as HTMLInputElement;
+    let statusInput:HTMLSelectElement = document.getElementById("status") as HTMLSelectElement;
     let taskText:string = taskInput.value.trim();
+    let startDate:Date=new Date(startInput.value)
+    let endDate:Date=new Date(startInput.value)
+    let status:Statut= stringToStatut(statusInput.value) as Statut
 
     if (taskText === "") return;
+    if(!testDate(startDate)) return ;
+    if(!testDate(endDate)) return ;
+    
+    let task:Task = new Task(Date.now(), taskText,startDate,endDate,status);
+    let url= new URL (window.location.href)
+    const isSubTask:boolean =url.searchParams.get('isSubTask') ==='true'
+    console.log(isSubTask)
+    if (isSubTask){
+        const taskId:number= Number(url.searchParams.get('taskId'))
+        let task=await getTaskFromBd(taskId)
+        let subtask:SubTask={
+            id:Date.now(),
+            text:taskText,
+            dateDebut:startDate,
+            dateFin:endDate,
+            statut:status
+        }
+        task.addSubtask(subtask)
+        console.log(task)
+        updateTask(taskId,task.toInterface())
+        window.location.href='searchTask.html'
+    }
 
-    let tasks:Task[] = getTasks();
-    if (tasks.some(task => task.getText() === taskText)) {
-        taskInput.value=""
-        alert(`la tache ${taskText} existe deja`)
+
+    else if (!saveTaskBd(task))
+    {
+        alert("desoler erreur pendans la sauvegarde")
         return;
+    }
+    else{
+        alert('sauvegerde reussit')
+        taskInput.value = "";
+        startInput.value="";
+        endInput.value="";
+        statusInput.value=Statut.new
     }
     
-    let task:Task = new Task(Date.now(), taskText);
-
-    tasks.push(task);
-    saveTasks(tasks);
-
-    taskInput.value = "";
-    renderTasks();
 }
 
-function renderTasks() {
-    let taskList = document.getElementById("taskList") as HTMLElement;
-    taskList.innerHTML = "";
 
-    let tasks:Task[] = getTasks();
-    tasks.forEach(task => {
-        let taskElement = document.createElement("li");
-        taskElement.classList.add("task");
-        taskElement.setAttribute("id", task.getText());
-        taskElement.innerHTML = `
-            <span>${task.getText()}</span>
-            <div class="actions">
-                <button id="${task.getText()}" name="edit-btn" onclick="editTask(${task.getId()})">✏️</button>
-                <button id="${task.getText()}" name="delete" onclick="deleteTask(${task.getId()})">🗑️</button>
-                <button onclick="addSubtask(${task.getId()})">➕ Sous-Tâche</button>
-            </div>
-            <ul class="subtasks" id="subtasks-${task.getId()}"></ul>
-        `;
-        taskList.appendChild(taskElement)
-        renderSubtasks(task.getId(), task.getSubTask());
-    });
-}
-
-function ifExistTask(text:string){
-    let tasks:Task[]=getTasks()
-    tasks.forEach(element => {
-        console.log(element.getText())
-        if (element.getText()===text){
-            console.log(text)
-            return false
-        }
-    });
-    return true
-}
-
-function editTask(taskId:number) {
-    let tasks = getTasks();
-    let task = tasks.find(t => t.getId() === taskId) ;
-    if(task=== undefined)
-        return;
-    let newText = prompt("Modifier la tâche :", task.getText()) as string;
-    newText= newText.trim()
-    if(newText=="" )
-        alert("une tache ne peut pas etre vide")
-    else if (! ifExistTask(newText)){
-        alert("cette tache existe deja")
-        return ;
-    }
-    if (newText) {
-        task.setText(newText)  ;
-        saveTasks(tasks);
-        renderTasks();
-    }
-}
-
-function deleteTask(taskId:number) {
-    let alt=confirm("etes vous sure de supprimer cette tache")
-    if(alt){
-        let tasks = getTasks().filter(t => t.getId() !== taskId);
-        saveTasks(tasks);
-        renderTasks();
-    }
-}
-
-function addSubtask(taskId:number) {
-    let subtaskText = prompt("Ajouter une sous-tâche :");
-    if (!subtaskText) return;
-
-    let tasks = getTasks();
-    let task = tasks.find(t => t.getId() === taskId);
-    if(task===undefined)
-        return
-
-    let hasAdd:boolean=task.addSubtask(new Task(Date.now(), subtaskText ));
-    if(!hasAdd){
-        return;
-    }
-    saveTasks(tasks);
-    renderTasks();
-}
-
-function renderSubtasks(taskId:number, subtasks:Task[]) {
-    console.log(taskId)
-    let subtaskList = document.getElementById(`subtasks-${taskId}`) as HTMLElement;
-    subtaskList.innerHTML = ""; 
-    subtasks.forEach(subtask => {
-    let subtaskElement = document.createElement("li");
-
-        subtaskElement.innerHTML = `
-            <span>${subtask.getText()}</span>
-            <button onclick="editSubtask(${taskId}, ${subtask.getId()})">✏️</button>
-            <button onclick="deleteSubtask(${taskId}, ${subtask.getId()})">🗑️</button>
-        `;
-
-        subtaskList.appendChild(subtaskElement);
-    });
-}
-
-function editSubtask(taskId:number, subtaskId:number) {
-    let tasks = getTasks();
-    let task = tasks.find(t => t.getId() === taskId);
-    if (task===undefined)
-        return
-    let subtask = task.getSubTask().find(st => st.getId() === subtaskId);
-    if (subtask===undefined)
-        return
-    let newText = prompt("Modifier la sous-tâche :", subtask.getText());
-    if (newText) {
-        subtask.setText(newText) ;
-        saveTasks(tasks);
-        renderTasks();
-    }
-}
-
-function deleteSubtask(taskId:number, subtaskId:number) {
-    let tasks = getTasks();
-    let task = tasks.find(t => t.getId() === taskId);
-    if (task===undefined)
-        return
-    let subtask = task.getSubTask().find(st => st.getId() === subtaskId);
-    if (subtask===undefined)
-        return
-    let alt=confirm("etes vous sure de supprimer cette sous tache")
-    if(alt){
-        let hasDelete:boolean=task.deleteSubtask(subtaskId)
-        saveTasks(tasks);
-        renderTasks();
-    }
-}
-
-function loadTodo() {
-    renderTasks();
-}
