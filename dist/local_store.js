@@ -61,12 +61,12 @@ export function getAllTasks() {
             const tasks = event.target.result;
             // Transformer les tâches en iTask[]
             const formattedTasks = tasks.map((task) => {
-                var _a;
+                var _a, _b;
                 return ({
                     id: task.id,
                     text: task.text, // Assumant que 'name' dans IndexedDB correspond à 'text'
                     dateDebut: new Date(task.dateDebut),
-                    dateFinReel: task.dateFinReel ? new Date(task.real_end_date) : undefined,
+                    dateFinReel: (_a = task.dateFinReel) !== null && _a !== void 0 ? _a : undefined,
                     dateFin: new Date(task.dateFin),
                     subtask: task.subtask ? task.subtask.map((st) => {
                         var _a;
@@ -79,7 +79,7 @@ export function getAllTasks() {
                             statut: (_a = stringToStatut(st.statut)) !== null && _a !== void 0 ? _a : Statut.terminer
                         });
                     }) : [],
-                    statut: (_a = stringToStatut(task.statut)) !== null && _a !== void 0 ? _a : Statut.terminer
+                    statut: (_b = stringToStatut(task.statut)) !== null && _b !== void 0 ? _b : Statut.terminer
                 });
             });
             resolve(formattedTasks);

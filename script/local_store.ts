@@ -82,7 +82,7 @@ export function getAllTasks(): Promise<iTask[]> {
                 id: task.id,
                 text: task.text, // Assumant que 'name' dans IndexedDB correspond à 'text'
                 dateDebut: new Date(task.dateDebut),
-                dateFinReel: task.dateFinReel   ? new Date(task.real_end_date) : undefined,
+                dateFinReel: task.dateFinReel  ?? undefined,
                 dateFin: new Date(task.dateFin),
                 subtask: task.subtask ? task.subtask.map((st: any) => ({
                     id: st.id,

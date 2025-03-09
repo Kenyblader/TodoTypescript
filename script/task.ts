@@ -80,10 +80,12 @@ export class Task{
             case Statut.enCours:
                 this.statut=Statut.terminer
                 this.dateFinReel= new Date()
+                console.log("creation"+this.dateFinReel)
                 break;
             case Statut.terminer:
                 this.statut=Statut.new
                 this.dateFinReel=undefined
+                console.log("destruction"+this.dateFinReel)
                 break;
         
             default:
@@ -91,7 +93,14 @@ export class Task{
                 break;
         }
     }
-    
+
+    public getafficheStatut():string{
+        if( this.statut==Statut.terminer)
+            return  (this.dateFinReel instanceof Date && !isNaN(this.dateFinReel.getTime())) ? this.dateFinReel.toISOString().split('T')[0]: "";
+        else
+            return this.statut
+
+    }
   
     public addSubtask(task:SubTask):boolean {
         let item=this.subtasks.find(t=>t.id===task.id)
@@ -109,6 +118,42 @@ export class Task{
             return false
         this.subtasks=this.subtasks.filter(st => st.id !== id)
         return true
+    }
+
+    public editSubtask(id:number, text:string):boolean {
+        let item=this.subtasks.find(t=>t.id===id)
+        
+        if(item==undefined)
+            return false
+        item.text=text
+        return true
+    }
+
+    public changeStatusSubtask(id:number)
+    {
+        let item=this.subtasks.find(t=>t.id===id)   
+        if(item==undefined)
+            return 
+        let curent=item.statut
+        switch (curent) {
+            case Statut.new:
+                item.statut=Statut.enCours
+                break;
+            case Statut.enCours:
+                item.statut=Statut.terminer
+                item.dateFinReel= new Date()
+                console.log("creation"+item.dateFinReel)
+                break;
+            case Statut.terminer:
+                item.statut=Statut.new
+                item.dateFinReel=undefined
+                console.log("destruction"+item.dateFinReel)
+                break;
+        
+            default:
+                console.error('aucun statut correspondant')
+                break;
+        }
     }
 
 

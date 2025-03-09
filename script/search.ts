@@ -50,7 +50,7 @@ function displayTasks(filteredTasks:Task[]) {
                 <td>${task.getText()}</td>
                 <td>${valiDate(task.getDateDebut())}</td>
                 <td>${valiDate(task.getFin())}</td>
-                <td>${task.getStatut()}</td>
+                <td>${task.getafficheStatut()}</td>
                 <td>
                     <button class="edit-btn" id="edit${task.getId()}" >✏️</button>
                     <button class="delete-btn" id="delete${task.getId()}" >🗑️</button>
@@ -80,15 +80,19 @@ function displayTasks(filteredTasks:Task[]) {
                       <td>${sub.dateFin.toISOString().split('T')[0]}</td>
                     <td>${sub.statut}</td>
                     <td>
-                        <button class="edit-btn" id="edit${sub.id}" onclick="editSubTask(${sub.id})">✏️</button>
-                        <button class="delete-btn" id="delete${sub.id}" onclick="deleteSubTask(${sub.id})">🗑️</button>
-                        <button class="status-btn" id="statut${task.getId()}" >🔄Change status</button>
+                        <button class="edit-btn" id="edit${sub.id}" >✏️</button>
+                        <button class="delete-btn" id="delete${sub.id}" >🗑️</button>
+                        <button class="status-btn" id="statut${sub.id}" >🔄Change status</button>
                     </td>
                 </tr>
             `;
             taskTableBody.appendChild(subRow);
             let editSubButon=document.getElementById(`edit${sub.id}`) as HTMLButtonElement
             let deleteSubButton=document.getElementById(`delete${sub.id}`) as HTMLButtonElement
+            let statusSubButton=document.getElementById(`statut${sub.id}`) as HTMLButtonElement
+            editSubButon.addEventListener('click',()=>{editSubTask(sub.id,task.getId())})
+            deleteSubButton.addEventListener('click',()=>{deleteSubTask(sub.id,task.getId())})
+            statusSubButton.addEventListener('click',()=>{changeStatusSubTask(sub.id,task.getId()) })
         });
     });
 }
@@ -129,10 +133,32 @@ async function addSubTask(id:number) {
     window.location.href= `index.html?isSubTask=${isSubTask}&taskId=${id}`
 }
 
-function editSubTask(id:number) {
-    alert(`Modifier la sous-tâche ${id}`);
+async function editSubTask(id:number, taskid:number) {
+    let newName=prompt("entrer le nouveau nom :") as string
+    if (!newName){
+        console.error("nom vide")
+        return};
+   let task= await getTaskFromBd(taskid)
+    task.editSubtask(id,newName)
+    await updateTask(taskid,task.toInterface())
+   let tasks= await getAllTasksFromBd()
+   displayTasks(tasks)
 }
 
-function deleteSubTask(id:number) {
-    alert(`Supprimer la sous-tâche ${id}`);
+async function deleteSubTask(id:number,taskid:number) {
+    let isOk=confirm("etes vous sur de supprimer cette tache")
+    if(!isOk) return;
+    let task= await getTaskFromBd(taskid)
+    task.deleteSubtask(id)
+    await updateTask(taskid,task.toInterface())
+    let tasks= await getAllTasksFromBd()
+    displayTasks(tasks)
+}
+
+async function changeStatusSubTask(id:number,taskid:number) {
+   let task= await getTaskFromBd(taskid)
+    task.changeStatusSubtask(id)
+    await updateTask(taskid,task.toInterface())
+   let tasks= await getAllTasksFromBd()
+   displayTasks(tasks)
 }

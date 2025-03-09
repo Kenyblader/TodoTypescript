@@ -50,7 +50,7 @@ function displayTasks(filteredTasks) {
                 <td>${task.getText()}</td>
                 <td>${valiDate(task.getDateDebut())}</td>
                 <td>${valiDate(task.getFin())}</td>
-                <td>${task.getStatut()}</td>
+                <td>${task.getafficheStatut()}</td>
                 <td>
                     <button class="edit-btn" id="edit${task.getId()}" >✏️</button>
                     <button class="delete-btn" id="delete${task.getId()}" >🗑️</button>
@@ -79,15 +79,19 @@ function displayTasks(filteredTasks) {
                       <td>${sub.dateFin.toISOString().split('T')[0]}</td>
                     <td>${sub.statut}</td>
                     <td>
-                        <button class="edit-btn" id="edit${sub.id}" onclick="editSubTask(${sub.id})">✏️</button>
-                        <button class="delete-btn" id="delete${sub.id}" onclick="deleteSubTask(${sub.id})">🗑️</button>
-                        <button class="status-btn" id="statut${task.getId()}" >🔄Change status</button>
+                        <button class="edit-btn" id="edit${sub.id}" >✏️</button>
+                        <button class="delete-btn" id="delete${sub.id}" >🗑️</button>
+                        <button class="status-btn" id="statut${sub.id}" >🔄Change status</button>
                     </td>
                 </tr>
             `;
             taskTableBody.appendChild(subRow);
             let editSubButon = document.getElementById(`edit${sub.id}`);
             let deleteSubButton = document.getElementById(`delete${sub.id}`);
+            let statusSubButton = document.getElementById(`statut${sub.id}`);
+            editSubButon.addEventListener('click', () => { editSubTask(sub.id, task.getId()); });
+            deleteSubButton.addEventListener('click', () => { deleteSubTask(sub.id, task.getId()); });
+            statusSubButton.addEventListener('click', () => { changeStatusSubTask(sub.id, task.getId()); });
         });
     });
 }
@@ -135,9 +139,39 @@ function addSubTask(id) {
         window.location.href = `index.html?isSubTask=${isSubTask}&taskId=${id}`;
     });
 }
-function editSubTask(id) {
-    alert(`Modifier la sous-tâche ${id}`);
+function editSubTask(id, taskid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let newName = prompt("entrer le nouveau nom :");
+        if (!newName) {
+            console.error("nom vide");
+            return;
+        }
+        ;
+        let task = yield getTaskFromBd(taskid);
+        task.editSubtask(id, newName);
+        yield updateTask(taskid, task.toInterface());
+        let tasks = yield getAllTasksFromBd();
+        displayTasks(tasks);
+    });
 }
-function deleteSubTask(id) {
-    alert(`Supprimer la sous-tâche ${id}`);
+function deleteSubTask(id, taskid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let isOk = confirm("etes vous sur de supprimer cette tache");
+        if (!isOk)
+            return;
+        let task = yield getTaskFromBd(taskid);
+        task.deleteSubtask(id);
+        yield updateTask(taskid, task.toInterface());
+        let tasks = yield getAllTasksFromBd();
+        displayTasks(tasks);
+    });
+}
+function changeStatusSubTask(id, taskid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let task = yield getTaskFromBd(taskid);
+        task.changeStatusSubtask(id);
+        yield updateTask(taskid, task.toInterface());
+        let tasks = yield getAllTasksFromBd();
+        displayTasks(tasks);
+    });
 }
