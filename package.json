@@ -8,5 +8,8 @@
   },
   "author": "blader",
   "license": "MIT",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0"
+  }
 }
